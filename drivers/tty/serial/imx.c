@@ -210,7 +210,7 @@ struct imx_port {
 	const struct imx_uart_data *devdata;
 
 	struct mctrl_gpios *gpios;
-	int flags;
+
 	/* counter to stop 0xff flood */
 	int idle_counter;
 
@@ -434,7 +434,7 @@ static void imx_uart_stop_tx(struct uart_port *port)
 	imx_uart_writel(sport, ucr4, UCR4);
 
 	/* in rs485 mode disable transmitter */
-	if (sport->flags & SER_RS485_ENABLED) {
+	if (port->rs485.flags & SER_RS485_ENABLED) {
 		if (sport->tx_state == SEND) {
 			sport->tx_state = WAIT_AFTER_SEND;
 
@@ -454,7 +454,7 @@ static void imx_uart_stop_tx(struct uart_port *port)
 			hrtimer_try_to_cancel(&sport->trigger_start_tx);
 
 			ucr2 = imx_uart_readl(sport, UCR2);
-			if (sport->flags & SER_RS485_RTS_AFTER_SEND)
+			if (port->rs485.flags & SER_RS485_RTS_AFTER_SEND)
 				imx_uart_rts_active(sport, &ucr2);
 			else
 				imx_uart_rts_inactive(sport, &ucr2);
@@ -490,8 +490,8 @@ static void imx_uart_stop_rx_with_loopback_ctrl(struct uart_port *port, bool loo
 	imx_uart_writel(sport, ucr4, UCR4);
 
 	/* See SER_RS485_ENABLED/UTS_LOOP comment in imx_uart_probe() */
-	if (sport->flags & SER_RS485_ENABLED &&
-	    sport->flags & SER_RS485_RTS_ON_SEND &&
+	if (port->rs485.flags & SER_RS485_ENABLED &&
+	    port->rs485.flags & SER_RS485_RTS_ON_SEND &&
 	    sport->have_rtscts && !sport->have_rtsgpio && loopback) {
 		uts = imx_uart_readl(sport, imx_uart_uts_reg(sport));
 		uts |= UTS_LOOP;
@@ -605,7 +605,7 @@ static void imx_uart_dma_tx_callback(void *data)
 
 	if (!uart_circ_empty(xmit) && !uart_tx_stopped(&sport->port))
 		imx_uart_dma_tx(sport);
-	else if (sport->flags & SER_RS485_ENABLED) {
+	else if (sport->port.rs485.flags & SER_RS485_ENABLED) {
 		u32 ucr4 = imx_uart_readl(sport, UCR4);
 		ucr4 |= UCR4_TCEN;
 		imx_uart_writel(sport, ucr4, UCR4);
@@ -690,10 +690,10 @@ static void imx_uart_start_tx(struct uart_port *port)
 	 * imx_uart_stop_tx(), but tx_state is still SEND.
 	 */
 
-	if (sport->flags & SER_RS485_ENABLED) {
+	if (port->rs485.flags & SER_RS485_ENABLED) {
 		if (sport->tx_state == OFF) {
 			u32 ucr2 = imx_uart_readl(sport, UCR2);
-			if (sport->flags & SER_RS485_RTS_ON_SEND)
+			if (port->rs485.flags & SER_RS485_RTS_ON_SEND)
 				imx_uart_rts_active(sport, &ucr2);
 			else
 				imx_uart_rts_inactive(sport, &ucr2);
@@ -704,7 +704,7 @@ static void imx_uart_start_tx(struct uart_port *port)
 			 * with loopback enabled because that will make our
 			 * transmitted data being just looped to RX.
 			 */
-			if (!(sport->flags & SER_RS485_RX_DURING_TX) &&
+			if (!(port->rs485.flags & SER_RS485_RX_DURING_TX) &&
 			    !port->rs485_rx_during_tx_gpio)
 				imx_uart_stop_rx_with_loopback_ctrl(port, false);
 
@@ -1087,7 +1087,7 @@ static void imx_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
 	struct imx_port *sport = (struct imx_port *)port;
 	u32 ucr3, uts;
 
-	if (!(sport->flags & SER_RS485_ENABLED)) {
+	if (!(port->rs485.flags & SER_RS485_ENABLED)) {
 		u32 ucr2;
 
 		/*
@@ -1605,8 +1605,8 @@ static void imx_uart_shutdown(struct uart_port *port)
 	ucr1 &= ~(UCR1_TRDYEN | UCR1_RRDYEN | UCR1_RTSDEN | UCR1_RXDMAEN |
 		  UCR1_ATDMAEN | UCR1_SNDBRK);
 	/* See SER_RS485_ENABLED/UTS_LOOP comment in imx_uart_probe() */
-	if (sport->flags & SER_RS485_ENABLED &&
-	    sport->flags & SER_RS485_RTS_ON_SEND &&
+	if (port->rs485.flags & SER_RS485_ENABLED &&
+	    port->rs485.flags & SER_RS485_RTS_ON_SEND &&
 	    sport->have_rtscts && !sport->have_rtsgpio) {
 		uts = imx_uart_readl(sport, imx_uart_uts_reg(sport));
 		uts |= UTS_LOOP;
@@ -1700,13 +1700,13 @@ imx_uart_set_termios(struct uart_port *port, struct ktermios *termios,
 	if (!sport->have_rtscts)
 		termios->c_cflag &= ~CRTSCTS;
 
-	if (sport->flags & SER_RS485_ENABLED) {
+	if (port->rs485.flags & SER_RS485_ENABLED) {
 		/*
 		 * RTS is mandatory for rs485 operation, so keep
 		 * it under manual control and keep transmitter
 		 * disabled.
 		 */
-		if (sport->flags & SER_RS485_RTS_AFTER_SEND)
+		if (port->rs485.flags & SER_RS485_RTS_AFTER_SEND)
 			imx_uart_rts_active(sport, &ucr2);
 		else
 			imx_uart_rts_inactive(sport, &ucr2);
@@ -2345,7 +2345,6 @@ static int imx_uart_probe(struct platform_device *pdev)
 	}
 
 	ret = uart_get_rs485_mode(&sport->port);
-	sport->flags = sport->port.rs485.flags;
 	if (ret)
 		goto err_clk;
 
