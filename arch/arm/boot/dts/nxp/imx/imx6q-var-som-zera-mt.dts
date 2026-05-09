@@ -1,0 +1,36 @@
+/dts-v1/;
+
+#include "imx6q-var-som-zera.dtsi"
+
+&ldb {
+	ext_ref = <1>;
+	status = "okay";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+		primary;
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: hsd100pxn1 {
+				clock-frequency = <30400000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <0>;
+				hfront-porch = <0>;
+				hsync-len = <20 160 160>;
+				vback-porch = <0>;
+				vfront-porch = <0>;
+				vsync-len = <3 48 48>;
+				de-active = <1>;
+			};
+		};
+	};
+};
+
+&hdmi {
+	status = "disabled";
+};
+
