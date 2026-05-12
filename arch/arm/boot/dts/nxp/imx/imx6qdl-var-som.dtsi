@@ -501,6 +501,10 @@
 	pinctrl-0 = <&pinctrl_uart2 &pinctrl_bt>;
 	uart-has-rtscts;
 	status = "okay";
+	bluetooth {
+		compatible = "ti,wl1835-st";
+		enable-gpios = <&gpio6 18 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &usbh1 {
