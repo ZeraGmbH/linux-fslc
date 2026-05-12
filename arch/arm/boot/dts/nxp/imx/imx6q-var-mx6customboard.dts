@@ -103,6 +103,17 @@
 };
 
 &iomuxc {
+	pinctrl-0 = <&pinctrl_hog>;
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			/* CTW6120 IRQ */
+			MX6QDL_PAD_EIM_DA7__GPIO3_IO07		0xb0b1
+			/* SDMMC2 CD/WP */
+			MX6QDL_PAD_KEY_COL4__GPIO4_IO14		0x1b0b0
+			MX6QDL_PAD_KEY_ROW4__GPIO4_IO15		0x1b0b0
+		>;
+	};
+
 	pinctrl_camera: cameragrp {
 		fsl,pins = <
 			MX6QDL_PAD_CSI0_DAT12__IPU1_CSI0_DATA12		0x1b0b0
