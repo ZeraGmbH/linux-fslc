@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Support for Zera MT310s2 initial display
+ *
+ * Copyright 2026 ZERA GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6q-var-som-zera.dtsi"
+
+/ {
+	model = "ZERA MT310s2 with initial display";
+	compatible = "variscite,var-som-imx6q", "fsl,imx6q";
+
+	panel0: lvds-panel0 {
+		compatible = "panel-lvds";
+		width-mm = <152>;
+		height-mm = <91>;
+		label = "etm070001adh6";
+		data-mapping = "jeida-18";
+
+		panel-timing {
+			clock-frequency = <30400000>;
+			hactive = <800>;
+			vactive = <480>;
+			hback-porch = <0>;
+			hfront-porch = <0>;
+			hsync-len = <20 160 160>;
+			vback-porch = <0>;
+			vfront-porch = <0>;
+			vsync-len = <3 48 48>;
+			de-active = <1>;
+		};
+
+		port {
+			panel_in_lvds0: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
+};
+
+&ldb {
+	status = "okay";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in_lvds0>;
+			};
+		};
+	};
+};

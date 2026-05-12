@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Support for Zera COM5003 with 2nd gen display
+ *
+ * Copyright 2026 ZERA GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6q-var-som-zera.dtsi"
+
+/ {
+	model = "ZERA COM5003 2nd gen display";
+	compatible = "variscite,var-som-imx6q", "fsl,imx6q";
+
+	panel0: lvds-panel0 {
+		compatible = "panel-lvds";
+		width-mm = <152>;
+		height-mm = <91>;
+		data-mapping = "jeida-24";
+
+		panel-timing {
+			clock-frequency = <68151480>;
+			hactive = <1280>;
+			vactive = <800>;
+			hback-porch = <5>;
+			hfront-porch = <64>;
+			hsync-len = <1>;
+			vback-porch = <2>;
+			vfront-porch = <40>;
+			vsync-len = <1>;
+		};
+		port {
+			panel_in_lvds0: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
+};
+
+&ldb {
+	status = "okay";
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in_lvds0>;
+			};
+		};
+	};
+};
