@@ -5089,8 +5089,7 @@ CONFIG_MXS_DMA=y
 # DMA Clients
 #
 # CONFIG_ASYNC_TX_DMA is not set
-CONFIG_DMATEST=m
-CONFIG_DMA_ENGINE_RAID=y
+# CONFIG_DMATEST is not set
 
 #
 # DMABUF options
