@@ -917,6 +917,7 @@ out:
 		release_firmware(fw);
 		fw = NULL;
 	} else {
+		dev_info(device, "Loaded FW: %s\n", name);
 		fw_log_firmware_info(fw, name, device);
 	}
 
