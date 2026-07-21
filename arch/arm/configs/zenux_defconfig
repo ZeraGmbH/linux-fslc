@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 6.18.32 Kernel Configuration
+# Linux/arm 6.18.39 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="arm-mortsgna-linux-gnueabi-gcc (GCC) 9.3.0"
 CONFIG_CC_IS_GCC=y
@@ -5309,14 +5309,7 @@ CONFIG_STAGING=y
 # end of Network Analyzer, Impedance Converters
 # end of IIO staging drivers
 
-CONFIG_STAGING_MEDIA=y
-CONFIG_VIDEO_IMX_MEDIA=y
-# CONFIG_VIDEO_MAX96712 is not set
-
-#
-# StarFive media platform drivers
-#
-# CONFIG_STAGING_MEDIA_DEPRECATED is not set
+# CONFIG_STAGING_MEDIA is not set
 # CONFIG_FB_TFT is not set
 # CONFIG_XIL_AXIS_FIFO is not set
 # CONFIG_GPIB is not set
