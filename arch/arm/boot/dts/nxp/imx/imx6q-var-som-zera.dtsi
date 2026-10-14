@@ -66,7 +66,11 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	cd-gpios = <&gpio4 14 GPIO_ACTIVE_LOW>;
-	wp-gpios = <&gpio4 15 GPIO_ACTIVE_HIGH>;
+	/* Disable write protect. Background: */
+	/* * Old kernels shipped missed this setting => There might be devices out with SDCard write protect enabled */
+	/* * After update these device turn broken/homesick */
+	/* * Write protect is just a pin detected - the card is still willing to write with WP enabled */
+	/*wp-gpios = <&gpio4 15 GPIO_ACTIVE_HIGH>;*/
 	status = "okay";
 };
 
