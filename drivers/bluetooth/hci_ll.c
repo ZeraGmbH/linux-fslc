@@ -489,15 +489,16 @@ static int send_command_from_firmware(struct ll_device *lldev,
 	struct sk_buff *skb;
 
 	if (cmd->opcode == HCI_VS_UPDATE_UART_HCI_BAUDRATE) {
-		/* ignore remote change
-		 * baud rate HCI VS command
+		/* Change the baud rate of the remote controller. The
+		 * host-side UART is switched to match in response to
+		 * the ACTION_SERIAL action that follows this command
+		 * in the firmware script.
 		 */
-		bt_dev_warn(lldev->hu.hdev,
-			    "change remote baud rate command in firmware");
-		return 0;
-	}
-	if (cmd->prefix != 1)
+		bt_dev_info(lldev->hu.hdev, "changing remote baud rate to %u",
+			    cmd->speed);
+	} else if (cmd->prefix != 1) {
 		bt_dev_dbg(lldev->hu.hdev, "command type %d", cmd->prefix);
+	}
 
 	skb = __hci_cmd_sync(lldev->hu.hdev, cmd->opcode, cmd->plen,
 			     &cmd->speed, HCI_INIT_TIMEOUT);
@@ -512,7 +513,8 @@ static int send_command_from_firmware(struct ll_device *lldev,
 /*
  * download_firmware -
  *	internal function which parses through the .bts firmware
- *	script file intreprets SEND, DELAY actions only as of now
+ *	script file and interprets SEND, WAIT, DELAY and SERIAL
+ *	actions
  */
 static int download_firmware(struct ll_device *lldev)
 {
@@ -571,6 +573,25 @@ static int download_firmware(struct ll_device *lldev)
 		case ACTION_WAIT_EVENT:  /* wait */
 			/* no need to wait as command was synchronous */
 			bt_dev_dbg(lldev->hu.hdev, "W");
+			break;
+		case ACTION_SERIAL:	/* serial */
+			{
+				struct bts_action_serial *serial =
+					(struct bts_action_serial *)action_ptr;
+
+				/* switch the host-side UART to the baud
+				 * rate requested by the script; the
+				 * controller side was already switched
+				 * via HCI_VS_UPDATE_UART_HCI_BAUDRATE
+				 * and hardware flow control is enabled
+				 */
+				bt_dev_info(lldev->hu.hdev,
+					    "changing local baud rate to %u",
+					    serial->baud);
+				if (lldev->serdev)
+					serdev_device_set_baudrate(
+						lldev->serdev, serial->baud);
+			}
 			break;
 		case ACTION_DELAY:	/* sleep */
 			bt_dev_info(lldev->hu.hdev, "sleep command in scr");
@@ -634,6 +655,15 @@ static int ll_setup(struct hci_uart *hu)
 			bt_dev_err(hu->hdev, "Failed to get CTS");
 			return err;
 		}
+
+		/* A failed attempt may have already switched the
+		 * host-side UART to a higher speed mid-script; the
+		 * controller was just reset to ROM mode above which
+		 * uses the initial speed, so make sure the host side
+		 * matches again before re-downloading.
+		 */
+		if (hu->init_speed)
+			serdev_device_set_baudrate(serdev, hu->init_speed);
 
 		err = download_firmware(lldev);
 		if (!err)
