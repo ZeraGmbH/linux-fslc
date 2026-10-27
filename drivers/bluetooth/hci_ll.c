@@ -607,6 +607,8 @@ static int download_firmware(struct ll_device *lldev)
 out_rel_fw:
 	/* fw download complete */
 	release_firmware(fw);
+	if (!err)
+		bt_dev_info(lldev->hu.hdev, "HCI firmware upload succeeded");
 	return err;
 }
 
