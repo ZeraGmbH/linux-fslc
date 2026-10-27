@@ -607,7 +607,7 @@ out_rel_fw:
 	/* fw download complete */
 	release_firmware(fw);
 	if (!err)
-		bt_dev_info(lldev->hu.hdev, "HCI firmware upload succeeded");
+		bt_dev_info(lldev->hu.hdev, "Firmware upload succeeded.");
 	return err;
 }
 
