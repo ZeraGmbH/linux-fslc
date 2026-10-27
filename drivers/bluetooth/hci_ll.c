@@ -579,11 +579,10 @@ static int download_firmware(struct ll_device *lldev)
 				struct bts_action_serial *serial =
 					(struct bts_action_serial *)action_ptr;
 
-				/* switch the host-side UART to the baud
-				 * rate requested by the script; the
-				 * controller side was already switched
-				 * via HCI_VS_UPDATE_UART_HCI_BAUDRATE
-				 * and hardware flow control is enabled
+				/* switch the host-side UART to the baud rate requested
+				 * by the script; the controller side was already
+				 * switched via HCI_VS_UPDATE_UART_HCI_BAUDRATE and
+				 * hardware flow control is enabled
 				 */
 				bt_dev_info(lldev->hu.hdev,
 					    "changing local baud rate to %u",
